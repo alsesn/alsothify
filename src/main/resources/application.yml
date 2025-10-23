@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/alsesn_app
+    username: postgres
+    password: 3fd73aa01913ed84
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+jwt:
+  secret:
+    key: thisissecretkeyievercreatedinmudevepmentcarrer
+
+server:
+  servlet:
+    context-path: /api/v1
