@@ -7,6 +7,7 @@ import me.alsesn.backend.io.ProfileResponse;
 import me.alsesn.backend.repository.UserRepository;
 import me.alsesn.backend.service.ProfileService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,6 +29,13 @@ public class ProfileServiceImpl implements ProfileService {
         }
 
         throw new ResponseStatusException(HttpStatus.CONFLICT, "email already exists");
+    }
+
+    @Override
+    public ProfileResponse getProfile(String email) {
+        UserEntity existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("user not found" + email ));
+        return convertProfileResponse(existingUser);
     }
 
     private ProfileResponse convertProfileResponse(UserEntity newProfile) {

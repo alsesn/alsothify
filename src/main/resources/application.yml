@@ -2,14 +2,19 @@ spring:
   application:
     name: backend
 
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/alsesn_app
+    url: jdbc:postgresql://localhost:5432/alsothify
     username: postgres
     password: 3fd73aa01913ed84
 
   jpa:
     hibernate:
       ddl-auto: update
+
+  output:
+    ansi:
+      enabled: ALWAYS
 
 jwt:
   secret:
