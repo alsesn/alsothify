@@ -1,16 +1,32 @@
 spring:
   application:
     name: backend
-
+  config:
+    import: optional:file:.env[.properties]
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/alsothify
-    username: postgres
-    password: 3fd73aa01913ed84
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
 
   jpa:
     hibernate:
       ddl-auto: update
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    default-from: ${MAIL_FORM_EMAIL}
+    properties:
+      mail:
+        smtp:
+          from: rostislavsusak747@gmail.com
+          auth: true
+          starttls:
+            enable: true
+    protocol: smtp
 
   output:
     ansi:
@@ -18,7 +34,7 @@ spring:
 
 jwt:
   secret:
-    key: thisissecretkeyievercreatedinmudevepmentcarrer
+    key: ${JWT_SECRET}
 
 server:
   servlet:

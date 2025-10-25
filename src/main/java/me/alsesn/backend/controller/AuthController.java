@@ -1,9 +1,12 @@
 package me.alsesn.backend.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me.alsesn.backend.io.AuthRequest;
 import me.alsesn.backend.io.AuthResponse;
+import me.alsesn.backend.io.ResetPasswordRequest;
 import me.alsesn.backend.service.AppUserDetailsService;
+import me.alsesn.backend.service.ProfileService;
 import me.alsesn.backend.util.JwtUtil;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -13,10 +16,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -29,6 +32,8 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final AppUserDetailsService appUserDetailsService;
     private final JwtUtil jwtUtil;
+
+    private final ProfileService profileService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
@@ -59,6 +64,54 @@ public class AuthController {
             error.put("error", true);
             error.put("message", "authentication failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
+    }
+
+    @GetMapping("/is-authenticated")
+    public ResponseEntity<Boolean> isAuthenticated(
+            @CurrentSecurityContext(expression = "authentication?.name") String email
+    ) {
+        return ResponseEntity.ok(email != null);
+    }
+
+    @PostMapping("/send-reset-otp")
+    public void sendResetOtp(@RequestParam String email) {
+        try {
+            profileService.sendResetOtp(email);
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            profileService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
+    }
+
+    @PostMapping("/send-otp")
+    public void sendVerifyOtp(@CurrentSecurityContext(expression = "authentication?.name") String email) {
+        try {
+            profileService.sendOtp(email);
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public void verifyEmail(@RequestBody Map<String, Object> request,
+                            @CurrentSecurityContext(expression = "authentication?.name") String email) {
+        if (request.get("otp").toString() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "missing details");
+        }
+
+        try {
+           profileService.verifyOtp(email, request.get("otp").toString());
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         }
     }
 
