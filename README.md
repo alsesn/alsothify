@@ -113,10 +113,3 @@ There's no separate roles/tokens table — the whole data model is a single user
 3. **Account verification**: an authenticated user requests an OTP (`/send-otp`), receives it by email, and confirms it (`/verify-otp`).
 4. **Password reset**: a logged-out user requests an OTP by email (`/send-reset-otp`), then submits email + OTP + new password (`/reset-password`).
 5. Every protected request goes through `JwtRequestFilter`, which extracts the token from the `Authorization` header or the `jwt` cookie, validates it, and populates the `SecurityContext`.
-
-## Known limitations (as-is)
-
-- `sendVerifyOtp`/`verifyOtp` don't null-check before calling `.toString()` on `request.get("otp")` — a missing `otp` field in the request body can throw a `NullPointerException` instead of a proper `400` error.
-- `AppUserDetailsService` doesn't grant any roles/authorities to the user (`new ArrayList<>()`), so there's effectively no role model in the project — just "authenticated / not authenticated".
-- The `mail.smtp.from` value is hardcoded in `application.yml`.
-- Logout is disabled in Spring Security (`.logout(AbstractHttpConfigurer::disable)`), yet `/logout` is listed as a public path — there's no actual logout endpoint in the controllers.
